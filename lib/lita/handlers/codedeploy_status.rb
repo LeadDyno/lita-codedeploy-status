@@ -4,13 +4,14 @@ require 'time-lord'
 module Lita
   module Handlers
     class CodedeployStatus < Handler
-      config :aws_region
+      config :aws_region, default: ENV['AWS_REGION'] || 'us-east-1'
       config :aws_access_key
       config :aws_secret_access_key
       config :application_name
       config :deployment_group_name
+      config :branches, required: true, type: Hash
 
-      route(/^codedeploy-status$/, :codedeploy_status, help: {"codedeploy-status" => "Display CodeDeploy status for most recent deployment"})
+      route(/^codedeploy-status\s*(.*?)$/, :codedeploy_status, help: {"codedeploy-status BRANCH" => "Display CodeDeploy status for most recent deployment of BRANCH"})
 
 
       def codedeploy_status(response)
@@ -26,35 +27,62 @@ module Lita
           end
         end
 
+        branch_name = response.matches[0][0]
+        if branch_name && branch_name != ''
+          branch = config.branches[branch_name]
+        else
+          config.branches.each do |k,v|
+            if v[:default]
+              branch_name = k
+              branch = v
+            end
+          end
+        end
+
+
+        unless deployment_done
+          response.reply("Deployment watch in progress - please wait until it is done before starting a new one.")
+          return
+        end
+
+        unless branch
+          response.reply("Could not find branch info for branch #{branch_name}.")
+          return
+        end
+
+        branch[:name] = branch_name
+
+        log.debug "Starting deployment watch for branch #{branch[:name]}: application_name #{branch[:application_name]}, deployment_group_name #{branch[:deployment_group_name]}"
+
         begin
-          @deployment_id = latest_deployment_id
+          @deployment_id = latest_deployment_id(branch[:application_name], branch[:deployment_group_name])
           @deployment_instances = get_deployment_instances
 
-          watch_deployment(response)
+          watch_deployment(branch, response)
         rescue => e
           response.reply("Error: #{e.message}")
         end
       end
 
-      def watch_deployment(response)
-        do_watch_deployment(response)
+      def watch_deployment(branch, response)
+        do_watch_deployment(branch, response)
         unless deployment_done
           every(10) do |timer|
-            do_watch_deployment(response, timer)
+            do_watch_deployment(branch, response, timer)
           end
         end
       end
 
-      def do_watch_deployment(response, timer=nil)
+      def do_watch_deployment(branch, response, timer=nil)
         begin
           update_deployment_info
 
           if deployment_done
-            render_output(response)
+            render_output(branch, response)
             timer.stop if timer
           else
             if deployment_updated
-              render_output(response)
+              render_output(branch, response)
             end
           end
         rescue => e
@@ -62,8 +90,9 @@ module Lita
         end
       end
 
-      def render_output(response)
+      def render_output(branch, response)
         response.reply(render_template_with_helpers("codedeploy_status", [@helper], config: config,
+                                                    branch: branch,
                                                     deployment_id: @deployment_id,
                                                     deployment: @deployment,
                                                     deployment_instances: @deployment_instances,
@@ -84,8 +113,8 @@ module Lita
         Aws::CodeDeploy::Client.new
       end
 
-      def latest_deployment_id
-        codedeploy_api.list_deployments(application_name: config.application_name, deployment_group_name: config.deployment_group_name).deployments.first
+      def latest_deployment_id(application_name, deployment_group_name)
+        codedeploy_api.list_deployments(application_name: application_name, deployment_group_name: deployment_group_name).deployments.first
       end
 
       def get_deployment_instances
@@ -101,7 +130,7 @@ module Lita
       end
 
       def deployment_done
-        @deployment.deployment_info.complete_time != nil
+        @deployment == nil || @deployment.deployment_info.complete_time != nil
       end
 
       def deployment_updated
