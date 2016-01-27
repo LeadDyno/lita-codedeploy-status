@@ -7,8 +7,6 @@ module Lita
       config :aws_region, default: ENV['AWS_REGION'] || 'us-east-1'
       config :aws_access_key
       config :aws_secret_access_key
-      config :application_name
-      config :deployment_group_name
       config :branches, required: true, type: Hash
 
       route(/^codedeploy-status\s*(.*?)$/, :codedeploy_status, help: {"codedeploy-status BRANCH" => "Display CodeDeploy status for most recent deployment of BRANCH"})
