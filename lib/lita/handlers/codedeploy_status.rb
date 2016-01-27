@@ -18,7 +18,7 @@ module Lita
         @helper = Module.new do
           def time_ago(t)
             if t
-              "(#{TimeLord::Period.new(t, Time.now).in_words})"
+              "(#{TimeLord::Period.new(t, ::Time.now).in_words})"
             end
           end
 
