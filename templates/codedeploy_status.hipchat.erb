@@ -8,5 +8,7 @@
 <% end %>
 <% end %>
 <% end %>
+<%= @deployment.deployment_info.complete_time != nil ? ['(dance)','(badass)','(cake)','(excellent)','(giggity)','(indeed)','(nice)','(ohmy)','(dosequis)','(rockon)','(salute)','(yey)','(fonzie)'].sample : '' %>
+
 
 https://console.aws.amazon.com/codedeploy/home?region=<%= @config.aws_region %>#/deployments/<%= @deployment_id %>
