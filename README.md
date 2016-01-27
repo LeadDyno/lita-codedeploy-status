@@ -14,10 +14,11 @@ gem "lita-codedeploy-status"
 
 It is assumed your ENV has the proper environment variables for the aws-sdk gem to function. Typically this
 includes:
-
+```
 AWS_REGION
 AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY
+```
 
 These can be overridden using the following config variables:
 
