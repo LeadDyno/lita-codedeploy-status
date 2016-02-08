@@ -1,12 +1,13 @@
-<%= @deployment.deployment_info.complete_time == nil ? 'Deploying' : 'Deployed' %> <%= @branch_name %>/<%= @deployment_id %> - <%= @deployment.deployment_info.status %> <%= time_ago(@deployment.deployment_info.create_time) %>
+<%= @deployment.deployment_info.complete_time == nil ? 'Deploying' : 'Deployed' %> <%= @branch[:name] %>/<%= @deployment_id %> - <%= @deployment.deployment_info.status %> <%= time_ago(@deployment.deployment_info.create_time) %>
 
 <% @deployment_instance_status.each do |dis| %>
     <%= short_instance_id(dis.instance_summary.instance_id) %> <%= dis.instance_summary.status %> <%= time_ago(dis.instance_summary.last_updated_at) %>
 <% dis.instance_summary.lifecycle_events.each do |le| %>
-<% if le.start_time != nil && le.end_time == nil %>
- started <%= le.lifecycle_event_name %> <%= time_ago(le.start_time) %>
+<% if le.start_time != nil && le.end_time == nil %> in phase <%= le.lifecycle_event_name %><% end %>
 <% end %>
 <% end %>
-<% end %>
+<%= if @deployment.deployment_info.complete_time != nil %>
+
 
 https://console.aws.amazon.com/codedeploy/home?region=<%= @config.aws_region %>#/deployments/<%= @deployment_id %>
+<% end %>

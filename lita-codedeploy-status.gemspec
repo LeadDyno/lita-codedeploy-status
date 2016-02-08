@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name          = "lita-codedeploy-status"
-  spec.version       = "0.2.0"
+  spec.version       = "0.2.1"
   spec.authors       = ["Mike Machado"]
   spec.email         = ["mike@machadolab.com"]
   spec.description   = "Show AWS CodeDeploy status"

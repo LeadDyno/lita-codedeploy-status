@@ -3,12 +3,12 @@
 <% @deployment_instance_status.each do |dis| %>
     <%= short_instance_id(dis.instance_summary.instance_id) %> <%= dis.instance_summary.status %> <%= time_ago(dis.instance_summary.last_updated_at) %>
 <% dis.instance_summary.lifecycle_events.each do |le| %>
-<% if le.start_time != nil && le.end_time == nil %>
- started <%= le.lifecycle_event_name %> <%= time_ago(le.start_time) %>
+<% if le.start_time != nil && le.end_time == nil %> in phase <%= le.lifecycle_event_name %><% end %>
 <% end %>
 <% end %>
-<% end %>
-<%= @deployment.deployment_info.complete_time != nil ? ['(dance)','(badass)','(cake)','(excellent)','(giggity)','(indeed)','(nice)','(ohmy)','(dosequis)','(rockon)','(salute)','(yey)','(fonzie)'].sample : '' %>
+<%= if @deployment.deployment_info.complete_time != nil %>
+<%= ['(dance)','(badass)','(cake)','(excellent)','(giggity)','(indeed)','(nice)','(ohmy)','(dosequis)','(rockon)','(salute)','(yey)','(fonzie)'].sample %>
 
 
 https://console.aws.amazon.com/codedeploy/home?region=<%= @config.aws_region %>#/deployments/<%= @deployment_id %>
+<% end %>
