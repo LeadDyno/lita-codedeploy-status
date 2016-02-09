@@ -6,7 +6,7 @@
 <% if le.start_time != nil && le.end_time == nil %> in phase <%= le.lifecycle_event_name %><% end %>
 <% end %>
 <% end %>
-<%= if @deployment.deployment_info.complete_time != nil %>
+<% if @deployment.deployment_info.complete_time != nil %>
 
 
 https://console.aws.amazon.com/codedeploy/home?region=<%= @config.aws_region %>#/deployments/<%= @deployment_id %>
